@@ -53,6 +53,9 @@ def _post_data():
       headers = {'Content-Type': 'application/x-www-form-urlencoded'},
       deadline = 10
   )
+  
+  #clear data queue
+  del _data[:]
 
   logging.debug('Cametrics result: %d' % result.status_code)
 
@@ -68,8 +71,8 @@ def prepare_string(value):
   return str(value).strip()
 
 def prepare_location(value):
+  coord = {'x': None, 'y': None}
   if isinstance(value, dict):
-    coord = {'x': None, 'y': None}
     for axis, tests in _axes.iteritems():
       for test in tests:
         if test in value:
@@ -80,10 +83,15 @@ def prepare_location(value):
       logging.warning('Cametrics guessing that value, %s, is (%s, %s)' % value, value[0], value[1])
       coord['x'] = value[0]
       coord['y'] = value[1]
-    elif None == coord['x'] or None == coord['y']:
-      logging.error('Cametrics could not prepare: %s' % value)
-      return None
-    return '%(x)s,%(y)s' % coord
+  elif isinstance(value,str):
+  	values = value.split(',')
+  	coord['x'] = int(values[0])
+  	coord['y'] = int(values[1])
+  
+  if None == coord['x'] or None == coord['y']:
+    logging.error('Cametrics could not prepare: %s' % value)
+    return None
+  return '%(x)s,%(y)s' % coord
   
 def prepare(value, vtype):
   """
